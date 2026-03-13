@@ -148,7 +148,7 @@ const DonutChart = ({ subscriptions, total }: { subscriptions: Subscription[]; t
   );
 };
 
-export const MonthlyCost = ({ value, subscriptions, month: _ }: MonthlyCostProps) => {
+export const MonthlyCost = ({ value, subscriptions }: MonthlyCostProps) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
