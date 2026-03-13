@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Target } from 'lucide-react';
+
+
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,7 +58,7 @@ export const BudgetLimit = ({ open, setOpen, onSave }: BudgetLimitProps) => {
         </DialogHeader>
         <div className="flex flex-col gap-4 pt-2">
           <p className="text-sm text-muted-foreground">
-            Set a monthly spending cap. You'll see a progress bar when approaching the limit.
+            Set a monthly spending cap. You&apos;ll see a progress bar when approaching the limit.
           </p>
           <Input
             type="number"

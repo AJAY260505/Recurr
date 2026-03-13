@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+
 import { format } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { MonthlyCost } from '@/components/monthly-cost';
 
 import { useSubscriptions } from '@/hooks/use-subscriptions';
-import { getBudget } from '@/lib/budget';
+
 import { cn } from '@/lib/utils';
 
 interface MonthSwitcherProps {
