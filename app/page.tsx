@@ -42,14 +42,40 @@ const Home = () => {
   useEffect(() => {
     setBudget(getBudget());
 
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       setUser(data.user);
-      if (data.user) fetchRef.current();
+      if (data.user) {
+        // Restore currency preference from Supabase
+        const { data: prefs } = await supabase
+          .from('user_preferences')
+          .select('currency')
+          .eq('user_id', data.user.id)
+          .single();
+
+        if (prefs?.currency) {
+          localStorage.setItem('CURRENCY_PREFERENCE', prefs.currency);
+        }
+
+        fetchRef.current();
+      }
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) fetchRef.current();
+      if (session?.user) {
+        // Restore currency preference on auth state change too
+        const { data: prefs } = await supabase
+          .from('user_preferences')
+          .select('currency')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (prefs?.currency) {
+          localStorage.setItem('CURRENCY_PREFERENCE', prefs.currency);
+        }
+
+        fetchRef.current();
+      }
     });
 
     return () => listener.subscription.unsubscribe();

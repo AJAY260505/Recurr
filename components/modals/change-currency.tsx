@@ -1,33 +1,22 @@
 import { useState } from 'react';
-
 import { localeToCurrency, currencyToName, getCurrency, getExchangeRate } from '@/lib/currency';
-
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription,
+  DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+  Popover, PopoverContent, PopoverTrigger,
 } from '@/components/ui/popover';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandList,
-  CommandItem,
+  Command, CommandEmpty, CommandGroup,
+  CommandInput, CommandList, CommandItem,
 } from '@/components/ui/command';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface ChangeCurrencyProps {
@@ -64,7 +53,6 @@ export const ChangeCurrency = ({ open, setOpen }: ChangeCurrencyProps) => {
     try {
       const rate = await getExchangeRate(fromCurrency, toCurrency);
 
-      // Convert all existing subscription prices
       for (const sub of subscriptions) {
         await updateSubscription(sub.id, {
           ...sub,
@@ -72,11 +60,19 @@ export const ChangeCurrency = ({ open, setOpen }: ChangeCurrencyProps) => {
         });
       }
 
+      // Save to localStorage
       localStorage.setItem('CURRENCY_PREFERENCE', toCurrency);
+
+      // Save to Supabase so it persists across logins
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from('user_preferences')
+          .upsert({ user_id: user.id, currency: toCurrency });
+      }
+
       toast.success(`Converted all prices to ${toCurrency}`);
       setOpen(false);
-
-      // Reload to reflect new currency symbol
       window.location.reload();
     } catch {
       toast.error('Failed to fetch exchange rate. Please try again.');
@@ -105,7 +101,7 @@ export const ChangeCurrency = ({ open, setOpen }: ChangeCurrencyProps) => {
                 className="w-full justify-between"
               >
                 {value
-                  ? allCurrencies.find((currency) => currency.value === value)?.label
+                  ? allCurrencies.find((c) => c.value === value)?.label
                   : 'Select currency'}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
