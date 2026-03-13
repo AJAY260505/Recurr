@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { UseFormReturn } from 'react-hook-form';
-
+import { Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
@@ -28,6 +28,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+// Add this constant above the component:
+const CATEGORIES = [
+  'Entertainment',
+  'Work & Productivity',
+  'Health & Fitness',
+  'Education',
+  'Finance',
+  'Shopping',
+  'Food & Drink',
+  'Travel',
+  'News & Media',
+  'Software & Tools',
+  'Gaming',
+  'Other',
+];
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { DrawerClose, DrawerFooter } from '@/components/ui/drawer';
@@ -193,6 +208,34 @@ export const SubscriptionForm = ({
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {CATEGORIES.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* Ongoing checkbox */}
               <FormField

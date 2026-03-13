@@ -18,9 +18,10 @@ interface CalendarProps {
   direction: number;
   isAuthenticated: boolean;
   onAuthRequired: () => void;
+  categoryFilter: string;
 }
 
-export const Calendar = ({ dates, monthToShow, direction, isAuthenticated, onAuthRequired }: CalendarProps) => {
+export const Calendar = ({ dates, monthToShow, direction, isAuthenticated, onAuthRequired, categoryFilter }: CalendarProps) => {
   const slideVariants = {
     initial: (direction: number) => ({
       y: direction * 40,
@@ -37,6 +38,12 @@ export const Calendar = ({ dates, monthToShow, direction, isAuthenticated, onAut
     useSubscriptions();
 
   const monthSubscriptions = getMonthSubscriptions(monthToShow, subscriptions);
+
+  const filteredSubscriptions = categoryFilter === 'All'
+    ? monthSubscriptions
+    : monthSubscriptions.filter(
+        (s) => (s.category ?? 'Other') === categoryFilter
+      );
 
   const [dateToAddTo, setDateToAddTo] = useState<Date | null>(null);
   const [subscriptionToShow, setSubscriptionToShow] = useState<Subscription[]>([]);
@@ -89,7 +96,7 @@ export const Calendar = ({ dates, monthToShow, direction, isAuthenticated, onAut
               key={date.toISOString()}
               date={date}
               isCurrentMonth={isSameMonth(date, monthToShow)}
-              subscriptions={monthSubscriptions.filter(
+              subscriptions={filteredSubscriptions.filter(
                 (subscription) =>
                   getDate(subscription.startDate) === getDate(date)
               )}

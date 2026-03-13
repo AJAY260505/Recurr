@@ -19,6 +19,7 @@ export const subscriptionSchema = z
     endDate: z.date().nullable(),
     isTrial: z.boolean().default(false),
     trialEndDate: z.date().nullable().default(null),
+    category: z.string().optional(),
   })
   .refine(
     (data) => {

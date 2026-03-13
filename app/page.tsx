@@ -12,6 +12,7 @@ import {
 } from 'date-fns';
 import { useHotkeys } from '@mantine/hooks';
 
+import { CategoryFilter } from '@/components/category-filter';
 import { DayPill } from '@/components/day-pill';
 import { MonthSwitcher } from '@/components/month-switcher';
 import { Calendar } from '@/components/calendar';
@@ -32,6 +33,7 @@ const Home = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [budget, setBudget] = useState<number | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState('All');
 
   const fetchSubscriptions = useSubscriptions((s) => s.fetchSubscriptions);
   const fetchRef = useRef(fetchSubscriptions);
@@ -100,6 +102,12 @@ const Home = () => {
       />
 
       <section className="flex flex-col gap-4">
+        {user && (
+          <CategoryFilter
+            selected={categoryFilter}
+            onChange={setCategoryFilter}
+          />
+        )}
         <div className="grid grid-cols-7 gap-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
             <DayPill key={day}>{day}</DayPill>
@@ -111,6 +119,7 @@ const Home = () => {
           direction={direction}
           isAuthenticated={!!user}
           onAuthRequired={() => setAuthModalOpen(true)}
+          categoryFilter={categoryFilter}
         />
       </section>
 

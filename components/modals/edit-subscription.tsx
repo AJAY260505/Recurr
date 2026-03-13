@@ -50,6 +50,7 @@ export const EditSubscription = ({
       interval: subscriptionToEdit.interval,
       isOngoing: !subscriptionToEdit.endDate,
       startDate: new Date(subscriptionToEdit.startDate),
+      category: subscriptionToEdit.category,
       endDate: subscriptionToEdit.endDate
         ? new Date(subscriptionToEdit.endDate)
         : null,
@@ -65,6 +66,9 @@ export const EditSubscription = ({
       interval: values.interval,
       startDate: values.startDate,
       endDate: values.isOngoing ? null : values.endDate,
+      isTrial: values.isTrial,
+      trialEndDate: values.trialEndDate,
+      category: values.category,
     });
     setSubscriptionToEdit(null);
   }
