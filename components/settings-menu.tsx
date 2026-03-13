@@ -12,6 +12,7 @@ import {
   Keyboard,
   DollarSign,
   LogOut,
+  Target,
 } from 'lucide-react';
 import { useOs, useHotkeys } from '@mantine/hooks';
 
@@ -31,13 +32,15 @@ import { KeyboardShortcuts } from '@/components/modals/keyboard-shortcuts';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { Subscription } from '@/types/subscription';
 import { ChangeCurrency } from './modals/change-currency';
+import { BudgetLimit } from './modals/budget-limit';
 import { supabase } from '@/lib/supabase';
 
 interface SettingsMenuProps {
   isAuthenticated: boolean;
+  onBudgetChange: (budget: number | null) => void;
 }
 
-export const SettingsMenu = ({ isAuthenticated }: SettingsMenuProps) => {
+export const SettingsMenu = ({ isAuthenticated, onBudgetChange }: SettingsMenuProps) => {
   const { theme, setTheme } = useTheme();
   const { exportSubscriptions, importSubscriptions } = useSubscriptions();
 
@@ -50,10 +53,9 @@ export const SettingsMenu = ({ isAuthenticated }: SettingsMenuProps) => {
   const os = useOs();
   const isMac = os === 'macos' || os === 'ios';
 
-  const [isKeyboardShortcutsModalOpen, setIsKeyboardShortcutsModalOpen] =
-    useState(false);
-  const [isChangeCurrencyModalOpen, setIsChangeCurrencyModalOpen] =
-    useState(false);
+  const [isKeyboardShortcutsModalOpen, setIsKeyboardShortcutsModalOpen] = useState(false);
+  const [isChangeCurrencyModalOpen, setIsChangeCurrencyModalOpen] = useState(false);
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
 
   const importData = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,14 +73,7 @@ export const SettingsMenu = ({ isAuthenticated }: SettingsMenuProps) => {
       }
 
       const validatedSubscriptions = data.filter((sub: Subscription) => {
-        if (
-          !sub.id ||
-          !sub.name ||
-          sub.price === undefined ||
-          sub.price === null ||
-          !sub.startDate ||
-          !sub.interval
-        ) {
+        if (!sub.id || !sub.name || sub.price === undefined || sub.price === null || !sub.startDate || !sub.interval) {
           toast.error(`${sub.name} is missing required fields`, {
             description: 'Please ensure all fields are present',
           });
@@ -146,13 +141,15 @@ export const SettingsMenu = ({ isAuthenticated }: SettingsMenuProps) => {
                 <Moon className="size-4 mr-2" />
               )}
               <span>Toggle theme</span>
-              <DropdownMenuShortcut>
-                {isMac ? '⌥T' : 'Alt+T'}
-              </DropdownMenuShortcut>
+              <DropdownMenuShortcut>{isMac ? '⌥T' : 'Alt+T'}</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setIsChangeCurrencyModalOpen(true)}>
               <DollarSign className="size-4 mr-2" />
               <span>Change currency</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsBudgetModalOpen(true)}>
+              <Target className="size-4 mr-2" />
+              <span>Monthly budget</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setIsKeyboardShortcutsModalOpen(true)}>
               <Keyboard className="size-4 mr-2" />
@@ -192,6 +189,11 @@ export const SettingsMenu = ({ isAuthenticated }: SettingsMenuProps) => {
       <ChangeCurrency
         open={isChangeCurrencyModalOpen}
         setOpen={setIsChangeCurrencyModalOpen}
+      />
+      <BudgetLimit
+        open={isBudgetModalOpen}
+        setOpen={setIsBudgetModalOpen}
+        onSave={onBudgetChange}
       />
     </>
   );

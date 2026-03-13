@@ -19,24 +19,27 @@ import { AddSubscription } from '@/components/modals/add-subscription';
 import { AuthModal } from '@/components/modals/auth-modal';
 import { SettingsMenu } from '@/components/settings-menu';
 import { AnalyticsDashboard } from '@/components/analytics-dashboard';
+import { UpcomingRenewals } from '@/components/upcoming-renewals';
 import { supabase } from '@/lib/supabase';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
+import { getBudget } from '@/lib/budget';
 import Image from 'next/image';
 import { User } from '@supabase/supabase-js';
-import { UpcomingRenewals } from '@/components/upcoming-renewals';
-
 
 const Home = () => {
   const [monthToShow, setMonthToShow] = useState(new Date());
   const [direction, setDirection] = useState<0 | -1 | 1>(0);
   const [user, setUser] = useState<User | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [budget, setBudget] = useState<number | null>(null);
 
   const fetchSubscriptions = useSubscriptions((s) => s.fetchSubscriptions);
   const fetchRef = useRef(fetchSubscriptions);
   fetchRef.current = fetchSubscriptions;
 
   useEffect(() => {
+    setBudget(getBudget());
+
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       if (data.user) fetchRef.current();
@@ -75,16 +78,17 @@ const Home = () => {
   return (
     <div className="min-h-full flex flex-col gap-6 py-8">
       <div className="flex items-center justify-between">
-        <div className="flex items-end gap-1.5">
-          <Image
-            src="/logo.svg"
-            alt="Recurr"
-            width={100}
-            height={100}
-            className="mb-2 pointer-events-none"
-          />
-        </div>
-        <SettingsMenu isAuthenticated={!!user} />
+        <Image
+          src="/logo.svg"
+          alt="Recurr"
+          width={100}
+          height={100}
+          className="mb-2 pointer-events-none"
+        />
+        <SettingsMenu
+          isAuthenticated={!!user}
+          onBudgetChange={(b) => setBudget(b)}
+        />
       </div>
 
       <MonthSwitcher
@@ -92,7 +96,9 @@ const Home = () => {
         onPrevious={goToPreviousMonth}
         onNext={goToNextMonth}
         direction={direction}
+        budget={budget}
       />
+
       <section className="flex flex-col gap-4">
         <div className="grid grid-cols-7 gap-2">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
@@ -112,10 +118,9 @@ const Home = () => {
         onAuthRequired={() => setAuthModalOpen(true)}
         isAuthenticated={!!user}
       />
+
       {user && <UpcomingRenewals />}
       {user && <AnalyticsDashboard />}
-
-      
 
       <AuthModal
         open={authModalOpen}
