@@ -20,6 +20,8 @@ export const subscriptionSchema = z
     isTrial: z.boolean().default(false),
     trialEndDate: z.date().nullable().default(null),
     category: z.string().optional(),
+    isShared: z.boolean().default(false),
+    sharedWith: z.number().min(2).max(20).default(2),
   })
   .refine(
     (data) => {

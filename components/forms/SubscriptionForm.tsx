@@ -27,7 +27,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-// Add this constant above the component:
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { DialogClose, DialogFooter } from '@/components/ui/dialog';
+import { DrawerClose, DrawerFooter } from '@/components/ui/drawer';
+import { ServicePicker } from '@/components/service-picker';
+import { cn } from '@/lib/utils';
+import { getCurrencySymbol } from '@/lib/currency';
+import { subscriptionSchema } from '@/schema/subscription';
+
 const CATEGORIES = [
   'Entertainment',
   'Work & Productivity',
@@ -42,16 +49,6 @@ const CATEGORIES = [
   'Gaming',
   'Other',
 ];
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { DialogClose, DialogFooter } from '@/components/ui/dialog';
-import { DrawerClose, DrawerFooter } from '@/components/ui/drawer';
-
-import { ServicePicker } from '@/components/service-picker';
-
-import { cn } from '@/lib/utils';
-import { getCurrencySymbol } from '@/lib/currency';
-
-import { subscriptionSchema } from '@/schema/subscription';
 
 export const SubscriptionForm = ({
   form,
@@ -66,6 +63,10 @@ export const SubscriptionForm = ({
 }) => {
   const isTrial = form.watch('isTrial');
   const isOngoing = form.watch('isOngoing');
+  const isShared = form.watch('isShared');
+  const sharedWith = form.watch('sharedWith') ?? 2;
+  const price = form.watch('price') ?? 0;
+  const yourShare = isShared && sharedWith >= 2 ? price / sharedWith : price;
 
   return (
     <Form {...form}>
@@ -73,6 +74,7 @@ export const SubscriptionForm = ({
         <ScrollArea className={cn('max-h-96 overflow-y-auto', isDrawer && 'px-2')}>
           <div className="p-1">
             <div className="space-y-3">
+
               {/* Service name */}
               <FormField
                 control={form.control}
@@ -104,7 +106,7 @@ export const SubscriptionForm = ({
                   name="price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Price</FormLabel>
+                      <FormLabel>Total price</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -170,7 +172,7 @@ export const SubscriptionForm = ({
                 )}
               />
 
-              {/* Trial end date — only shown when isTrial is true */}
+              {/* Trial end date */}
               {isTrial && (
                 <FormField
                   control={form.control}
@@ -208,16 +210,14 @@ export const SubscriptionForm = ({
                 />
               )}
 
+              {/* Category */}
               <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -225,9 +225,7 @@ export const SubscriptionForm = ({
                       </FormControl>
                       <SelectContent>
                         {CATEGORIES.map((cat) => (
-                          <SelectItem key={cat} value={cat}>
-                            {cat}
-                          </SelectItem>
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -235,6 +233,65 @@ export const SubscriptionForm = ({
                   </FormItem>
                 )}
               />
+
+              {/* Shared subscription toggle */}
+              <FormField
+                control={form.control}
+                name="isShared"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (!checked) form.setValue('sharedWith', 2);
+                        }}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Shared subscription</FormLabel>
+                      <FormDescription>
+                        Split the cost between multiple people.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Number of people + your share preview */}
+              {isShared && (
+                <div className="flex flex-col gap-3">
+                  <FormField
+                    control={form.control}
+                    name="sharedWith"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Number of people</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={2}
+                            max={20}
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex items-center justify-between bg-secondary rounded-lg px-3 py-2">
+                    <p className="text-xs text-muted-foreground">Your share</p>
+                    <p className="text-sm font-medium text-emerald-500">
+                      {getCurrencySymbol()}{yourShare.toFixed(2)}
+                      <span className="text-xs text-muted-foreground ml-1">
+                        / {getCurrencySymbol()}{price.toFixed(2)} total
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Ongoing checkbox */}
               <FormField
@@ -328,6 +385,7 @@ export const SubscriptionForm = ({
                   )}
                 />
               </div>
+
             </div>
           </div>
         </ScrollArea>

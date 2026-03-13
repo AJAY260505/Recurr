@@ -9,6 +9,8 @@ export interface Subscription {
   isTrial?: boolean;
   trialEndDate?: Date | null;
   category?: string;
+  isShared?: boolean;
+  sharedWith?: number;
 }
 
 export interface Transaction {

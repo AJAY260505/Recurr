@@ -29,7 +29,6 @@ import {
 } from '@/components/ui/drawer';
 
 import { subscriptionSchema } from '@/schema/subscription';
-
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
@@ -40,8 +39,8 @@ interface AddSubscriptionProps {
 
 export const AddSubscription = ({ isAuthenticated, onAuthRequired }: AddSubscriptionProps) => {
   const { addSubscription } = useSubscriptions();
-
   const isDesktop = useMediaQuery('(min-width: 768px)');
+  const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof subscriptionSchema>>({
     resolver: zodResolver(subscriptionSchema),
@@ -53,6 +52,11 @@ export const AddSubscription = ({ isAuthenticated, onAuthRequired }: AddSubscrip
       isOngoing: true,
       startDate: new Date(),
       endDate: null,
+      isTrial: false,
+      trialEndDate: null,
+      category: undefined,
+      isShared: false,
+      sharedWith: 2,
     },
   });
 
@@ -65,12 +69,15 @@ export const AddSubscription = ({ isAuthenticated, onAuthRequired }: AddSubscrip
       interval: values.interval,
       startDate: values.startDate,
       endDate: values.isOngoing ? null : values.endDate,
+      isTrial: values.isTrial,
+      trialEndDate: values.trialEndDate,
+      category: values.category,
+      isShared: values.isShared,
+      sharedWith: values.sharedWith,
     });
     form.reset();
     setOpen(false);
   }
-
-  const [open, setOpen] = useState(false);
 
   const handleOpen = () => {
     if (!isAuthenticated) {

@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/drawer';
 
 import { SubscriptionForm } from '@/components/forms/SubscriptionForm';
-
 import { subscriptionSchema } from '@/schema/subscription';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { Subscription } from '@/types/subscription';
@@ -38,7 +37,6 @@ export const EditSubscription = ({
   setSubscriptionToEdit,
 }: EditSubscriptionProps) => {
   const { updateSubscription } = useSubscriptions();
-
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const form = useForm<z.infer<typeof subscriptionSchema>>({
@@ -50,10 +48,14 @@ export const EditSubscription = ({
       interval: subscriptionToEdit.interval,
       isOngoing: !subscriptionToEdit.endDate,
       startDate: new Date(subscriptionToEdit.startDate),
-      category: subscriptionToEdit.category,
-      endDate: subscriptionToEdit.endDate
-        ? new Date(subscriptionToEdit.endDate)
+      endDate: subscriptionToEdit.endDate ? new Date(subscriptionToEdit.endDate) : null,
+      isTrial: subscriptionToEdit.isTrial ?? false,
+      trialEndDate: subscriptionToEdit.trialEndDate
+        ? new Date(subscriptionToEdit.trialEndDate)
         : null,
+      category: subscriptionToEdit.category,
+      isShared: subscriptionToEdit.isShared ?? false,
+      sharedWith: subscriptionToEdit.sharedWith ?? 2,
     },
   });
 
@@ -69,6 +71,8 @@ export const EditSubscription = ({
       isTrial: values.isTrial,
       trialEndDate: values.trialEndDate,
       category: values.category,
+      isShared: values.isShared,
+      sharedWith: values.sharedWith,
     });
     setSubscriptionToEdit(null);
   }
@@ -78,17 +82,13 @@ export const EditSubscription = ({
       <Dialog
         open={open}
         onOpenChange={(isOpen) => {
-          if (!isOpen) {
-            setSubscriptionToEdit(null);
-          }
+          if (!isOpen) setSubscriptionToEdit(null);
         }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit subscription</DialogTitle>
-            <DialogDescription>
-              Update your subscription details.
-            </DialogDescription>
+            <DialogDescription>Update your subscription details.</DialogDescription>
           </DialogHeader>
           <SubscriptionForm form={form} onSubmit={onSubmit} isEditing />
         </DialogContent>
@@ -100,17 +100,13 @@ export const EditSubscription = ({
     <Drawer
       open={open}
       onOpenChange={(isOpen) => {
-        if (!isOpen) {
-          setSubscriptionToEdit(null);
-        }
+        if (!isOpen) setSubscriptionToEdit(null);
       }}
     >
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>Edit subscription</DrawerTitle>
-          <DrawerDescription>
-            Update your subscription details.
-          </DrawerDescription>
+          <DrawerDescription>Update your subscription details.</DrawerDescription>
         </DrawerHeader>
         <SubscriptionForm form={form} onSubmit={onSubmit} isDrawer isEditing />
       </DrawerContent>

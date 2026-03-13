@@ -49,6 +49,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
         isTrial: d.is_trial ?? false,
         trialEndDate: d.trial_end_date ? new Date(d.trial_end_date) : null,
         category: d.category ?? undefined,
+        isShared: d.is_shared ?? false,
+        sharedWith: d.shared_with ?? 2,
       }));
       set({ subscriptions: mapped });
     }
@@ -106,6 +108,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
       is_trial: subscription.isTrial ?? false,
       trial_end_date: subscription.trialEndDate ?? null,
       category: subscription.category ?? null,
+      is_shared: subscription.isShared ?? false,
+      shared_with: subscription.sharedWith ?? 2,
     });
 
     if (!error) {
@@ -139,6 +143,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
         is_trial: subscription.isTrial ?? false,
         trial_end_date: subscription.trialEndDate ?? null,
         category: subscription.category ?? null,
+        is_shared: subscription.isShared ?? false,
+        shared_with: subscription.sharedWith ?? 2,
       })
       .eq('id', id);
 
@@ -181,6 +187,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
       is_trial: s.isTrial ?? false,
       trial_end_date: s.trialEndDate ?? null,
       category: s.category ?? null,
+      is_shared: s.isShared ?? false,
+      shared_with: s.sharedWith ?? 2,
     }));
 
     const { error } = await supabase.from('subscriptions').insert(rows);
