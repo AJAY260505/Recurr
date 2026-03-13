@@ -16,9 +16,11 @@ interface CalendarProps {
   dates: Date[];
   monthToShow: Date;
   direction: number;
+  isAuthenticated: boolean;
+  onAuthRequired: () => void;
 }
 
-export const Calendar = ({ dates, monthToShow, direction }: CalendarProps) => {
+export const Calendar = ({ dates, monthToShow, direction, isAuthenticated, onAuthRequired }: CalendarProps) => {
   const slideVariants = {
     initial: (direction: number) => ({
       y: direction * 40,
@@ -37,37 +39,21 @@ export const Calendar = ({ dates, monthToShow, direction }: CalendarProps) => {
   const monthSubscriptions = getMonthSubscriptions(monthToShow, subscriptions);
 
   const [dateToAddTo, setDateToAddTo] = useState<Date | null>(null);
-  const [subscriptionToShow, setSubscriptionToShow] = useState<Subscription[]>(
-    []
-  );
+  const [subscriptionToShow, setSubscriptionToShow] = useState<Subscription[]>([]);
 
   useEffect(() => {
     const migrateLogos = () => {
       const needsMigration =
         subscriptions.length > 0 && !localStorage.getItem('LOGO_MIGRATION_V1');
 
-      if (!needsMigration) {
-        return;
-      }
+      if (!needsMigration) return;
 
       subscriptions.forEach((subscription) => {
-        console.log('Current logo is', subscription.image);
-        if (
-          oldToNewLogoMap[subscription.image as keyof typeof oldToNewLogoMap]
-        ) {
-          console.log(
-            'Updating logo to',
-            oldToNewLogoMap[subscription.image as keyof typeof oldToNewLogoMap]
-          );
+        if (oldToNewLogoMap[subscription.image as keyof typeof oldToNewLogoMap]) {
           updateSubscription(subscription.id, {
             ...subscription,
-            image:
-              oldToNewLogoMap[
-                subscription.image as keyof typeof oldToNewLogoMap
-              ],
+            image: oldToNewLogoMap[subscription.image as keyof typeof oldToNewLogoMap],
           });
-        } else {
-          console.log('No update needed for', subscription.image);
         }
       });
 
@@ -76,6 +62,14 @@ export const Calendar = ({ dates, monthToShow, direction }: CalendarProps) => {
 
     migrateLogos();
   }, [subscriptions, updateSubscription]);
+
+  const handleAddSubscription = (date: Date) => {
+    if (!isAuthenticated) {
+      onAuthRequired();
+      return;
+    }
+    setDateToAddTo(date);
+  };
 
   return (
     <>
@@ -99,7 +93,7 @@ export const Calendar = ({ dates, monthToShow, direction }: CalendarProps) => {
                 (subscription) =>
                   getDate(subscription.startDate) === getDate(date)
               )}
-              onAddSubscription={() => setDateToAddTo(date)}
+              onAddSubscription={() => handleAddSubscription(date)}
               onShowSubscriptionsSummary={(subscription) =>
                 setSubscriptionToShow(subscription)
               }
@@ -111,6 +105,8 @@ export const Calendar = ({ dates, monthToShow, direction }: CalendarProps) => {
         open={!!dateToAddTo}
         onClose={() => setDateToAddTo(null)}
         dateToAddTo={dateToAddTo || new Date()}
+        isAuthenticated={isAuthenticated}
+        onAuthRequired={onAuthRequired}
       />
       <SubscriptionsSummary
         open={!!subscriptionToShow.length}

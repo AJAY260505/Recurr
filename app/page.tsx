@@ -71,7 +71,6 @@ const Home = () => {
 
   return (
     <div className="h-full flex flex-col justify-center gap-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-end gap-1.5">
           <Image
@@ -101,6 +100,8 @@ const Home = () => {
           dates={dates}
           monthToShow={monthToShow}
           direction={direction}
+          isAuthenticated={!!user}
+          onAuthRequired={() => setAuthModalOpen(true)}
         />
       </section>
 
