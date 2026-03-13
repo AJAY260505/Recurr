@@ -2,8 +2,7 @@
 
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
-import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
 import MotionNumber from 'motion-number';
 
 import {
@@ -12,7 +11,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { Subscription } from '@/types/subscription';
 import { getCurrency, getCurrencySymbol } from '@/lib/currency';
@@ -32,7 +30,6 @@ interface DonutSegment {
 }
 
 const DONUT_RADIUS = 80;
-const INNER_RADIUS = 52;
 const CENTER = 110;
 const ICON_ORBIT = 104;
 
@@ -60,19 +57,18 @@ function buildSegments(subscriptions: Subscription[], total: number): DonutSegme
   });
 }
 
-const DonutChart = ({ subscriptions, total, month }: { subscriptions: Subscription[]; total: number; month: Date }) => {
+const colors = [
+  '#6366f1', '#8b5cf6', '#a855f7', '#ec4899',
+  '#f43f5e', '#f97316', '#eab308', '#22c55e',
+  '#14b8a6', '#06b6d4', '#3b82f6', '#818cf8',
+];
+
+const DonutChart = ({ subscriptions, total }: { subscriptions: Subscription[]; total: number }) => {
   const segments = buildSegments(subscriptions, total);
   const symbol = getCurrencySymbol();
 
-  const colors = [
-    '#6366f1', '#8b5cf6', '#a855f7', '#ec4899',
-    '#f43f5e', '#f97316', '#eab308', '#22c55e',
-    '#14b8a6', '#06b6d4', '#3b82f6', '#818cf8',
-  ];
-
   return (
     <svg width={CENTER * 2} height={CENTER * 2 + 24} viewBox={`0 0 ${CENTER * 2} ${CENTER * 2 + 24}`}>
-      {/* Track ring */}
       <circle
         cx={CENTER}
         cy={CENTER}
@@ -83,7 +79,6 @@ const DonutChart = ({ subscriptions, total, month }: { subscriptions: Subscripti
         strokeWidth={28}
       />
 
-      {/* Segments */}
       {subscriptions.length === 1 ? (
         <circle
           cx={CENTER}
@@ -107,7 +102,6 @@ const DonutChart = ({ subscriptions, total, month }: { subscriptions: Subscripti
         ))
       )}
 
-      {/* Center text */}
       <text
         x={CENTER}
         y={CENTER - 8}
@@ -131,7 +125,6 @@ const DonutChart = ({ subscriptions, total, month }: { subscriptions: Subscripti
         {symbol}{total.toFixed(2)}
       </text>
 
-      {/* Logos around ring */}
       {segments.map((seg) => (
         <foreignObject
           key={seg.subscription.id}
@@ -155,7 +148,7 @@ const DonutChart = ({ subscriptions, total, month }: { subscriptions: Subscripti
   );
 };
 
-export const MonthlyCost = ({ value, subscriptions, month }: MonthlyCostProps) => {
+export const MonthlyCost = ({ value, subscriptions, month: _ }: MonthlyCostProps) => {
   const [isMounted, setIsMounted] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -191,27 +184,20 @@ export const MonthlyCost = ({ value, subscriptions, month }: MonthlyCostProps) =
                 transition={{ duration: 0.2, ease: 'easeOut' }}
                 className="flex flex-col items-center p-4"
               >
-                <DonutChart subscriptions={subscriptions} total={value} month={month} />
+                <DonutChart subscriptions={subscriptions} total={value} />
                 <div className="w-full mt-2 flex flex-col gap-2 max-h-40 overflow-y-auto">
-                  {subscriptions.map((sub, i) => {
-                    const colors = [
-                      '#6366f1','#8b5cf6','#a855f7','#ec4899',
-                      '#f43f5e','#f97316','#eab308','#22c55e',
-                      '#14b8a6','#06b6d4','#3b82f6','#818cf8',
-                    ];
-                    return (
-                      <div key={sub.id} className="flex items-center justify-between gap-8">
-                        <div className="flex items-center gap-2">
-                          <div className="size-2 rounded-full shrink-0" style={{ background: colors[i % colors.length] }} />
-                          <Image src={sub.image} alt={sub.name} width={14} height={14} className="size-3.5 object-contain" />
-                          <p className="text-xs">{sub.name}</p>
-                        </div>
-                        <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                          {getCurrencySymbol()}{sub.price}
-                        </p>
+                  {subscriptions.map((sub, i) => (
+                    <div key={sub.id} className="flex items-center justify-between gap-8">
+                      <div className="flex items-center gap-2">
+                        <div className="size-2 rounded-full shrink-0" style={{ background: colors[i % colors.length] }} />
+                        <Image src={sub.image} alt={sub.name} width={14} height={14} className="size-3.5 object-contain" />
+                        <p className="text-xs">{sub.name}</p>
                       </div>
-                    );
-                  })}
+                      <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                        {getCurrencySymbol()}{sub.price}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </motion.div>
             ) : (
