@@ -293,7 +293,7 @@ export const AnalyticsDashboard = () => {
                         <p className="text-muted-foreground">{label}</p>
                         {payload.map((p) => (
                           <p key={String(p.dataKey)} className="font-medium">
-                            {p.dataKey}: {symbol}{p.value}
+                            {String(p.dataKey)}: {symbol}{p.value}
                           </p>
                         ))}
                       </div>
