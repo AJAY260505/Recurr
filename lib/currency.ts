@@ -97,7 +97,6 @@ export const getCurrency = () => {
     ) {
       return currencyPreference;
     }
-
     const locale = window.navigator.language as keyof typeof localeToCurrency;
     return localeToCurrency[locale] || 'USD';
   }
@@ -118,7 +117,6 @@ export const getCurrencySymbol = () => {
         currencyDisplay: 'narrowSymbol',
       }).format(0)[0];
     }
-
     const locale = window.navigator.language as keyof typeof localeToCurrency;
     const currencyCode = localeToCurrency[locale] || 'USD';
     return Intl.NumberFormat(locale, {
@@ -127,5 +125,44 @@ export const getCurrencySymbol = () => {
       currencyDisplay: 'narrowSymbol',
     }).format(0)[0];
   }
-  return '$'; // Default to USD symbol
+  return '$';
+};
+
+// Cache exchange rates in memory to avoid repeated API calls
+const rateCache: Record<string, { rate: number; fetchedAt: number }> = {};
+const CACHE_DURATION_MS = 1000 * 60 * 60; // 1 hour
+
+export const getExchangeRate = async (
+  from: string,
+  to: string
+): Promise<number> => {
+  if (from === to) return 1;
+
+  const cacheKey = `${from}_${to}`;
+  const cached = rateCache[cacheKey];
+
+  if (cached && Date.now() - cached.fetchedAt < CACHE_DURATION_MS) {
+    return cached.rate;
+  }
+
+  try {
+    const res = await fetch(
+      `https://api.frankfurter.app/latest?from=${from}&to=${to}`
+    );
+    const data = await res.json();
+    const rate = data.rates[to];
+    rateCache[cacheKey] = { rate, fetchedAt: Date.now() };
+    return rate;
+  } catch {
+    return 1; // fallback to 1:1 if API fails
+  }
+};
+
+export const convertPrice = async (
+  amount: number,
+  from: string,
+  to: string
+): Promise<number> => {
+  const rate = await getExchangeRate(from, to);
+  return amount * rate;
 };
