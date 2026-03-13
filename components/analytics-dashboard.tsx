@@ -33,6 +33,8 @@ const COLORS = [
   '#14b8a6', '#06b6d4',
 ];
 
+const now = new Date();
+
 function getCategory(subscription: Subscription): string {
   for (const group of groupedServices) {
     const match = group.services.find(
@@ -66,7 +68,6 @@ export const AnalyticsDashboard = () => {
   const symbol = getCurrencySymbol();
   const [activeTab, setActiveTab] = useState<'trends' | 'categories' | 'yoy'>('trends');
 
-  const now = new Date();
   const currentYear = getYear(now);
   const lastYear = currentYear - 1;
 
@@ -291,7 +292,7 @@ export const AnalyticsDashboard = () => {
                       <div className="bg-background border border-border rounded-lg px-2 py-1.5 text-xs flex flex-col gap-1">
                         <p className="text-muted-foreground">{label}</p>
                         {payload.map((p) => (
-                          <p key={p.dataKey} className="font-medium">
+                          <p key={String(p.dataKey)} className="font-medium">
                             {p.dataKey}: {symbol}{p.value}
                           </p>
                         ))}
