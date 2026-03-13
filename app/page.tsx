@@ -23,6 +23,8 @@ import { supabase } from '@/lib/supabase';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import Image from 'next/image';
 import { User } from '@supabase/supabase-js';
+import { UpcomingRenewals } from '@/components/upcoming-renewals';
+
 
 const Home = () => {
   const [monthToShow, setMonthToShow] = useState(new Date());
@@ -110,9 +112,10 @@ const Home = () => {
         onAuthRequired={() => setAuthModalOpen(true)}
         isAuthenticated={!!user}
       />
-
-      {/* Analytics — only shown when logged in */}
+      {user && <UpcomingRenewals />}
       {user && <AnalyticsDashboard />}
+
+      
 
       <AuthModal
         open={authModalOpen}
