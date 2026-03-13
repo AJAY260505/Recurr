@@ -18,6 +18,7 @@ import { Calendar } from '@/components/calendar';
 import { AddSubscription } from '@/components/modals/add-subscription';
 import { AuthModal } from '@/components/modals/auth-modal';
 import { SettingsMenu } from '@/components/settings-menu';
+import { AnalyticsDashboard } from '@/components/analytics-dashboard';
 import { supabase } from '@/lib/supabase';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import Image from 'next/image';
@@ -70,7 +71,7 @@ const Home = () => {
   ]);
 
   return (
-    <div className="h-full flex flex-col justify-center gap-6">
+    <div className="min-h-full flex flex-col gap-6 py-8">
       <div className="flex items-center justify-between">
         <div className="flex items-end gap-1.5">
           <Image
@@ -109,6 +110,9 @@ const Home = () => {
         onAuthRequired={() => setAuthModalOpen(true)}
         isAuthenticated={!!user}
       />
+
+      {/* Analytics — only shown when logged in */}
+      {user && <AnalyticsDashboard />}
 
       <AuthModal
         open={authModalOpen}
