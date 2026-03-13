@@ -26,15 +26,16 @@ interface CategoryFilterProps {
 export const CategoryFilter = ({ selected, onChange }: CategoryFilterProps) => {
   return (
     <div
-      className="flex gap-2 overflow-x-auto w-full"
-      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      className="flex gap-2 w-full overflow-x-scroll"
+      style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
     >
+      <style>{`div::-webkit-scrollbar { display: none; }`}</style>
       {CATEGORIES.map((cat) => (
         <button
           key={cat}
           onClick={() => onChange(cat)}
           className={cn(
-            'shrink-0 text-xs px-3 py-1.5 rounded-full border transition-all',
+            'shrink-0 text-xs px-3 py-1.5 rounded-full border transition-all whitespace-nowrap',
             selected === cat
               ? 'bg-foreground text-background border-foreground'
               : 'bg-transparent text-muted-foreground border-border hover:border-foreground/40'
