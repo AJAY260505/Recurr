@@ -64,9 +64,9 @@ export const SubscriptionForm = ({
   const isTrial = form.watch('isTrial');
   const isOngoing = form.watch('isOngoing');
   const isShared = form.watch('isShared');
-  const sharedWith = form.watch('sharedWith') ?? 2;
-  const price = form.watch('price') ?? 0;
-  const yourShare = isShared && sharedWith >= 2 ? price / sharedWith : price;
+  const sharedWith = Number(form.watch('sharedWith')) || 2;
+const price = Number(form.watch('price')) || 0;
+const yourShare = isShared && sharedWith >= 2 ? price / sharedWith : price;
 
   return (
     <Form {...form}>

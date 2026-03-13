@@ -26,6 +26,21 @@ interface SubscriptionState {
   getTransactionsTillDate: (subscription: Subscription | null) => Transaction[];
 }
 
+const mapRow = (d: Record<string, unknown>): Subscription => ({
+  id: d.id as string,
+  name: d.name as string,
+  image: d.image as string,
+  price: d.price as number,
+  interval: d.interval as 'monthly' | 'quarterly' | 'yearly',
+  startDate: new Date(d.start_date as string),
+  endDate: d.end_date ? new Date(d.end_date as string) : null,
+  isTrial: (d.is_trial as boolean) ?? false,
+  trialEndDate: d.trial_end_date ? new Date(d.trial_end_date as string) : null,
+  category: (d.category as string) ?? undefined,
+  isShared: (d.is_shared as boolean) ?? false,
+  sharedWith: (d.shared_with as number) ?? 2,
+});
+
 export const useSubscriptions = create<SubscriptionState>((set, get) => ({
   subscriptions: [],
   loading: false,
@@ -38,21 +53,7 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      const mapped: Subscription[] = data.map((d) => ({
-        id: d.id,
-        name: d.name,
-        image: d.image,
-        price: d.price,
-        interval: d.interval,
-        startDate: new Date(d.start_date),
-        endDate: d.end_date ? new Date(d.end_date) : null,
-        isTrial: d.is_trial ?? false,
-        trialEndDate: d.trial_end_date ? new Date(d.trial_end_date) : null,
-        category: d.category ?? undefined,
-        isShared: d.is_shared ?? false,
-        sharedWith: d.shared_with ?? 2,
-      }));
-      set({ subscriptions: mapped });
+      set({ subscriptions: data.map(mapRow) });
     }
     set({ loading: false });
   },
@@ -96,6 +97,9 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Optimistic update
+    set({ subscriptions: [subscription, ...get().subscriptions] });
+
     const { error } = await supabase.from('subscriptions').insert({
       id: subscription.id,
       user_id: user.id,
@@ -112,25 +116,37 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
       shared_with: subscription.sharedWith ?? 2,
     });
 
-    if (!error) {
-      set({ subscriptions: [...get().subscriptions, subscription] });
+    // Revert on error
+    if (error) {
+      set({ subscriptions: get().subscriptions.filter((s) => s.id !== subscription.id) });
     }
   },
 
   removeSubscription: async (id: string) => {
+    const previous = get().subscriptions;
+
+    // Optimistic update
+    set({ subscriptions: previous.filter((s) => s.id !== id) });
+
     const { error } = await supabase
       .from('subscriptions')
       .delete()
       .eq('id', id);
 
-    if (!error) {
-      set({
-        subscriptions: get().subscriptions.filter((s) => s.id !== id),
-      });
+    // Revert on error
+    if (error) {
+      set({ subscriptions: previous });
     }
   },
 
   updateSubscription: async (id: string, subscription: Subscription) => {
+    const previous = get().subscriptions;
+
+    // Optimistic update
+    set({
+      subscriptions: previous.map((s) => s.id === id ? subscription : s),
+    });
+
     const { error } = await supabase
       .from('subscriptions')
       .update({
@@ -148,12 +164,9 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
       })
       .eq('id', id);
 
-    if (!error) {
-      set({
-        subscriptions: get().subscriptions.map((s) =>
-          s.id === id ? subscription : s
-        ),
-      });
+    // Revert on error
+    if (error) {
+      set({ subscriptions: previous });
     }
   },
 
