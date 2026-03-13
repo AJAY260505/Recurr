@@ -17,6 +17,7 @@ import { MonthSwitcher } from '@/components/month-switcher';
 import { Calendar } from '@/components/calendar';
 import { AddSubscription } from '@/components/modals/add-subscription';
 import { AuthModal } from '@/components/modals/auth-modal';
+import { SettingsMenu } from '@/components/settings-menu';
 import { supabase } from '@/lib/supabase';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import Image from 'next/image';
@@ -44,7 +45,7 @@ const Home = () => {
     });
 
     return () => listener.subscription.unsubscribe();
-  }, []); // safe — fetchRef.current always has latest value
+  }, []);
 
   const goToPreviousMonth = () => {
     setDirection(-1);
@@ -70,15 +71,20 @@ const Home = () => {
 
   return (
     <div className="h-full flex flex-col justify-center gap-6">
-      <div className="flex items-end gap-1.5">
-        <Image
-          src="/logo.svg"
-          alt="Recurrt"
-          width={100}
-          height={100}
-          className="mb-2 pointer-events-none"
-        />
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-end gap-1.5">
+          <Image
+            src="/logo.svg"
+            alt="Recurr"
+            width={100}
+            height={100}
+            className="mb-2 pointer-events-none"
+          />
+        </div>
+        <SettingsMenu isAuthenticated={!!user} />
       </div>
+
       <MonthSwitcher
         month={monthToShow}
         onPrevious={goToPreviousMonth}

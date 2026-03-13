@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { Loader2 } from 'lucide-react';
 
 interface AuthModalProps {
   open: boolean;
@@ -26,6 +27,10 @@ export const AuthModal = ({ open, setOpen, onSuccess }: AuthModalProps) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    if (!email || !password) {
+      toast.error('Please fill in all fields.');
+      return;
+    }
     setLoading(true);
     const { error } = isLogin
       ? await supabase.auth.signInWithPassword({ email, password })
@@ -43,37 +48,54 @@ export const AuthModal = ({ open, setOpen, onSuccess }: AuthModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{isLogin ? 'Welcome back' : 'Create an account'}</DialogTitle>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="gap-1">
+          <DialogTitle className="text-2xl font-semibold">
+            {isLogin ? 'Welcome back' : 'Create an account'}
+          </DialogTitle>
           <DialogDescription>
             {isLogin
               ? 'Login to manage your subscriptions across devices.'
               : 'Sign up to save your subscriptions online.'}
           </DialogDescription>
         </DialogHeader>
+
         <div className="flex flex-col gap-3 py-2">
-          <Input
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Input
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-          />
-          <Button onClick={handleSubmit} disabled={loading}>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">Email</label>
+            <Input
+              placeholder="you@example.com"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">Password</label>
+            <Input
+              placeholder="••••••••"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            />
+          </div>
+
+          <Button onClick={handleSubmit} disabled={loading} className="mt-1">
+            {loading ? (
+              <Loader2 className="size-4 mr-2 animate-spin" />
+            ) : null}
             {loading ? 'Please wait...' : isLogin ? 'Login' : 'Sign Up'}
           </Button>
+
           <p
             className="text-sm text-muted-foreground text-center cursor-pointer hover:underline"
             onClick={() => setIsLogin(!isLogin)}
           >
-            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Login'}
+            {isLogin
+              ? "Don't have an account? Sign up"
+              : 'Already have an account? Login'}
           </p>
         </div>
       </DialogContent>

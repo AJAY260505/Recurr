@@ -3,8 +3,6 @@ import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/react';
 
 import { ThemeProvider } from '@/components/theme-provider';
-import { SettingsMenu } from '@/components/settings-menu';
-
 import { Toaster } from '@/components/ui/sonner';
 
 import './globals.css';
@@ -12,7 +10,7 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Recurrt',
+  title: 'Recurr',
   description: 'Simple and elegant subscription tracker',
 };
 
@@ -34,9 +32,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <main className="h-full max-w-lg mx-auto px-4">
             {children}
-            <div className="absolute right-4 bottom-4">
-              <SettingsMenu />
-            </div>
           </main>
           <Toaster />
         </ThemeProvider>

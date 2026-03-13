@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { useTheme } from 'next-themes';
 import {
@@ -10,8 +10,8 @@ import {
   Download,
   Upload,
   Keyboard,
-  XIcon,
   DollarSign,
+  LogOut,
 } from 'lucide-react';
 import { useOs, useHotkeys } from '@mantine/hooks';
 
@@ -31,10 +31,14 @@ import { KeyboardShortcuts } from '@/components/modals/keyboard-shortcuts';
 import { useSubscriptions } from '@/hooks/use-subscriptions';
 import { Subscription } from '@/types/subscription';
 import { ChangeCurrency } from './modals/change-currency';
+import { supabase } from '@/lib/supabase';
 
-export const SettingsMenu = () => {
+interface SettingsMenuProps {
+  isAuthenticated: boolean;
+}
+
+export const SettingsMenu = ({ isAuthenticated }: SettingsMenuProps) => {
   const { theme, setTheme } = useTheme();
-
   const { exportSubscriptions, importSubscriptions } = useSubscriptions();
 
   const toggleTheme = () => {
@@ -47,6 +51,8 @@ export const SettingsMenu = () => {
   const isMac = os === 'macos' || os === 'ios';
 
   const [isKeyboardShortcutsModalOpen, setIsKeyboardShortcutsModalOpen] =
+    useState(false);
+  const [isChangeCurrencyModalOpen, setIsChangeCurrencyModalOpen] =
     useState(false);
 
   const importData = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,8 +114,11 @@ export const SettingsMenu = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [isChangeCurrencyModalOpen, setIsChangeCurrencyModalOpen] =
-    useState(false);
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) toast.error('Failed to log out.');
+    else toast.success('Logged out.');
+  };
 
   return (
     <>
@@ -127,9 +136,7 @@ export const SettingsMenu = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" sideOffset={10}>
-          <DropdownMenuLabel>
-            Recurr
-          </DropdownMenuLabel>
+          <DropdownMenuLabel>Recurr</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={toggleTheme}>
@@ -143,15 +150,11 @@ export const SettingsMenu = () => {
                 {isMac ? '⌥T' : 'Alt+T'}
               </DropdownMenuShortcut>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setIsChangeCurrencyModalOpen(true)}
-            >
+            <DropdownMenuItem onClick={() => setIsChangeCurrencyModalOpen(true)}>
               <DollarSign className="size-4 mr-2" />
               <span>Change currency</span>
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => setIsKeyboardShortcutsModalOpen(true)}
-            >
+            <DropdownMenuItem onClick={() => setIsKeyboardShortcutsModalOpen(true)}>
               <Keyboard className="size-4 mr-2" />
               <span>Keyboard shortcuts</span>
             </DropdownMenuItem>
@@ -167,6 +170,19 @@ export const SettingsMenu = () => {
               <span>Export data</span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
+
+          {isAuthenticated && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-red-500 focus:text-red-500"
+              >
+                <LogOut className="size-4 mr-2" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
       <KeyboardShortcuts
