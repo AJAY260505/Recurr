@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
-// import { Separator } from '@/components/ui/separator';
 import {
   Form,
   FormField,
@@ -33,7 +32,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { DrawerClose, DrawerFooter } from '@/components/ui/drawer';
 
-// import { PrefillService } from '@/components/prefill-service';
 import { ServicePicker } from '@/components/service-picker';
 
 import { cn } from '@/lib/utils';
@@ -52,21 +50,16 @@ export const SubscriptionForm = ({
   isDrawer?: boolean;
   isEditing?: boolean;
 }) => {
+  const isTrial = form.watch('isTrial');
+  const isOngoing = form.watch('isOngoing');
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="pt-4">
-        <ScrollArea
-          className={cn('max-h-96 overflow-y-auto', isDrawer && 'px-2')}
-        >
+        <ScrollArea className={cn('max-h-96 overflow-y-auto', isDrawer && 'px-2')}>
           <div className="p-1">
-            {/* <PrefillService
-              onSelect={(service) => {
-                form.setValue('name', service.name);
-                form.setValue('image', service.image);
-              }}
-            />
-            <Separator className="my-4" /> */}
             <div className="space-y-3">
+              {/* Service name */}
               <FormField
                 control={form.control}
                 name="name"
@@ -89,6 +82,8 @@ export const SubscriptionForm = ({
                   </FormItem>
                 )}
               />
+
+              {/* Price + Interval */}
               <div className="grid grid-cols-2 gap-2">
                 <FormField
                   control={form.control}
@@ -102,13 +97,9 @@ export const SubscriptionForm = ({
                           step={0.01}
                           type="number"
                           min={0}
-                          onChange={(e) => {
-                            field.onChange(e.target.valueAsNumber);
-                          }}
+                          onChange={(e) => field.onChange(e.target.valueAsNumber)}
                           StartIcon={
-                            <div className="text-muted-foreground">
-                              {getCurrencySymbol()}
-                            </div>
+                            <div className="text-muted-foreground">{getCurrencySymbol()}</div>
                           }
                         />
                       </FormControl>
@@ -122,10 +113,7 @@ export const SubscriptionForm = ({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Interval</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select an interval" />
@@ -137,33 +125,95 @@ export const SubscriptionForm = ({
                           <SelectItem value="yearly">Yearly</SelectItem>
                         </SelectContent>
                       </Select>
-
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+
+              {/* Free trial toggle */}
+              <FormField
+                control={form.control}
+                name="isTrial"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (!checked) form.setValue('trialEndDate', null);
+                        }}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Free trial</FormLabel>
+                      <FormDescription>
+                        Track when your free trial converts to a paid subscription.
+                      </FormDescription>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {/* Trial end date — only shown when isTrial is true */}
+              {isTrial && (
+                <FormField
+                  control={form.control}
+                  name="trialEndDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Trial ends on</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                'pl-3 text-left font-normal',
+                                !field.value && 'text-muted-foreground'
+                              )}
+                            >
+                              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value ?? undefined}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < new Date()}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {/* Ongoing checkbox */}
               <FormField
                 control={form.control}
                 name="isOngoing"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>Ongoing subscription</FormLabel>
                       <FormDescription>
-                        Check this if you want to track an ongoing subscription
-                        without an end date.
+                        Check this if you want to track an ongoing subscription without an end date.
                       </FormDescription>
                     </div>
                   </FormItem>
                 )}
               />
+
+              {/* Start + End date */}
               <div className="grid grid-cols-2 gap-2">
                 <FormField
                   control={form.control}
@@ -175,17 +225,13 @@ export const SubscriptionForm = ({
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant={'outline'}
+                              variant="outline"
                               className={cn(
                                 'pl-3 text-left font-normal',
                                 !field.value && 'text-muted-foreground'
                               )}
                             >
-                              {field.value ? (
-                                format(field.value, 'PPP')
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
+                              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
@@ -208,29 +254,21 @@ export const SubscriptionForm = ({
                   name="endDate"
                   render={({ field }) => (
                     <FormItem className="flex flex-col pt-2">
-                      <FormLabel
-                        className={cn(
-                          form.getValues('isOngoing') && 'text-muted-foreground'
-                        )}
-                      >
+                      <FormLabel className={cn(isOngoing && 'text-muted-foreground')}>
                         End date
                       </FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant={'outline'}
+                              variant="outline"
                               className={cn(
                                 'pl-3 text-left font-normal',
                                 !field.value && 'text-muted-foreground'
                               )}
-                              disabled={form.getValues('isOngoing')}
+                              disabled={isOngoing}
                             >
-                              {field.value ? (
-                                format(field.value, 'PPP')
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
+                              {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
@@ -251,21 +289,20 @@ export const SubscriptionForm = ({
             </div>
           </div>
         </ScrollArea>
+
         {isDrawer ? (
           <DrawerFooter className="pt-4">
             <DrawerClose asChild>
               <Button variant="outline">Cancel</Button>
             </DrawerClose>
-            <Button type="submit">Add subscription</Button>
+            <Button type="submit">{isEditing ? 'Update' : 'Add'} subscription</Button>
           </DrawerFooter>
         ) : (
           <DialogFooter className="pt-4">
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">
-              {isEditing ? 'Update' : 'Add'} subscription
-            </Button>
+            <Button type="submit">{isEditing ? 'Update' : 'Add'} subscription</Button>
           </DialogFooter>
         )}
       </form>

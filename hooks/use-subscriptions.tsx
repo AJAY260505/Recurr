@@ -46,6 +46,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
         interval: d.interval,
         startDate: new Date(d.start_date),
         endDate: d.end_date ? new Date(d.end_date) : null,
+        isTrial: d.is_trial ?? false,
+        trialEndDate: d.trial_end_date ? new Date(d.trial_end_date) : null,
       }));
       set({ subscriptions: mapped });
     }
@@ -100,6 +102,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
       interval: subscription.interval,
       start_date: subscription.startDate,
       end_date: subscription.endDate ?? null,
+      is_trial: subscription.isTrial ?? false,
+      trial_end_date: subscription.trialEndDate ?? null,
     });
 
     if (!error) {
@@ -130,6 +134,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
         interval: subscription.interval,
         start_date: subscription.startDate,
         end_date: subscription.endDate ?? null,
+        is_trial: subscription.isTrial ?? false,
+        trial_end_date: subscription.trialEndDate ?? null,
       })
       .eq('id', id);
 
@@ -158,7 +164,6 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Clear existing and insert all imported
     await supabase.from('subscriptions').delete().eq('user_id', user.id);
 
     const rows = subscriptions.map((s) => ({
@@ -170,6 +175,8 @@ export const useSubscriptions = create<SubscriptionState>((set, get) => ({
       interval: s.interval,
       start_date: s.startDate,
       end_date: s.endDate ?? null,
+      is_trial: s.isTrial ?? false,
+      trial_end_date: s.trialEndDate ?? null,
     }));
 
     const { error } = await supabase.from('subscriptions').insert(rows);
