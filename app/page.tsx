@@ -73,7 +73,7 @@ const Home = () => {
       <div className="flex items-end gap-1.5">
         <Image
           src="/logo.svg"
-          alt="Subtrackt"
+          alt="Recurrt"
           width={100}
           height={100}
           className="mb-2 pointer-events-none"

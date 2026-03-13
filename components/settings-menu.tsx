@@ -128,7 +128,7 @@ export const SettingsMenu = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" sideOffset={10}>
           <DropdownMenuLabel>
-            Subtrack
+            Recurr
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
